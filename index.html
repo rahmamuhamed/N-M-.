@@ -97,6 +97,22 @@ button{cursor:pointer}
 .coupon.locked{opacity:.58}
 .coupon-code{font-weight:900;letter-spacing:1px;color:var(--blue)}
 .reward-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#081d3a;color:#fff;padding:14px 20px;border-radius:15px;box-shadow:var(--shadow);z-index:200;display:none}
+
+/* NEZAM Smart Mobility */
+.smart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.smart-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.smart-card h3{margin:0 0 7px}.smart-card p{margin:4px 0;color:var(--muted)}
+.smart-score{font-size:42px;font-weight:900}.score-bars{display:grid;gap:9px;margin-top:14px}
+.score-row{display:grid;grid-template-columns:90px 1fr 42px;align-items:center;gap:8px;font-size:12px}
+.score-track{height:8px;background:#e9eef5;border-radius:99px;overflow:hidden}.score-track i{display:block;height:100%;background:var(--blue);border-radius:99px}
+.driver-profile{display:flex;gap:14px;align-items:center}.driver-avatar{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#e9f2ff;color:var(--blue);font-weight:900;font-size:22px}
+.verified{color:var(--green);font-weight:800;font-size:12px}.driver-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.meta-box{background:#f7f9fc;padding:10px;border-radius:12px}.meta-box b{display:block}
+.challenge{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:14px;margin-top:9px}
+.challenge-progress{height:7px;background:#e9eef5;border-radius:99px;overflow:hidden;margin-top:7px}.challenge-progress i{display:block;height:100%;background:var(--green)}
+.wallet-balance{font-size:30px;font-weight:900}.mini-map{height:190px;border-radius:16px;background:linear-gradient(135deg,#eaf4ff,#f6fbf2);display:grid;place-items:center;border:1px solid var(--line);font-weight:800;color:var(--navy)}
+.sos{background:#fff4f4;border:1px solid #ffd2d2}.sos button{background:#c62828;color:#fff;border:0;border-radius:12px;padding:11px 15px;font-weight:900}
+@media(max-width:760px){.smart-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -120,6 +136,11 @@ button{cursor:pointer}
     <button onclick="showPage('campaign',this)">📢 Campaign</button>
     <button onclick="showPage('help',this)">🤖 NẒĀM Assistant</button>
     <button onclick="showPage('rewards',this)">🎁 <span data-reward-nav="rewards">Points & Coupons</span></button>
+    <button onclick="showPage('smart',this)">🧠 <span data-smart-nav="smart">Smart Planner</span></button>
+    <button onclick="showPage('driverInfo',this)">👨‍✈️ <span data-smart-nav="driver">Driver Safety</span></button>
+    <button onclick="showPage('wallet',this)">💳 <span data-smart-nav="wallet">Wallet</span></button>
+    <button onclick="showPage('challenges',this)">🏆 <span data-smart-nav="challenges">Challenges</span></button>
+
     <button onclick="showPage('predictions',this)">🔮 Smart Predictions</button>
     <button onclick="showPage('about',this)">ℹ️ About NEZĀM</button>
   </nav>
@@ -424,6 +445,57 @@ button{cursor:pointer}
   </div>
 </div>
 
+
+<div class="page" id="smart">
+  <div class="title"><div><h2 data-smart="planner">Smart Trip Planner</h2><p data-smart="plannerSub">NEZĀM compares your options and recommends the best trip.</p></div><span class="badge g">AI</span></div>
+  <div class="smart-grid">
+    <div class="smart-card"><h3>⭐ <span data-smart="recommended">Recommended for you</span></h3><p data-smart="recommendText">Best balance of speed, comfort, reliability and value.</p><div style="font-size:24px;font-weight:900;margin-top:12px">🚌 Route 205</div><p>18 min • 65% occupancy • On time</p><button class="btn primary" onclick="book('205')" data-smart="book">Book this trip +10 points</button></div>
+    <div class="smart-card"><h3 data-smart="smartScore">Trip Score</h3><div class="smart-score">91<span style="font-size:16px">/100</span></div><div class="score-bars">
+      <div class="score-row"><span data-smart="time">Time</span><div class="score-track"><i style="width:95%"></i></div><b>95</b></div>
+      <div class="score-row"><span data-smart="comfort">Comfort</span><div class="score-track"><i style="width:82%"></i></div><b>82</b></div>
+      <div class="score-row"><span data-smart="reliability">Reliability</span><div class="score-track"><i style="width:94%"></i></div><b>94</b></div>
+      <div class="score-row"><span data-smart="value">Value</span><div class="score-track"><i style="width:93%"></i></div><b>93</b></div>
+    </div></div>
+  </div>
+  <div class="title"><div><h2 data-smart="options">Compare options</h2></div></div>
+  <div class="smart-grid">
+    <div class="smart-card"><h3>⚡ <span data-smart="fastest">Fastest</span></h3><p>Route 102 • 14 min • 78% occupancy</p><button class="btn secondary" onclick="book('102')" data-smart="select">Select</button></div>
+    <div class="smart-card"><h3>👥 <span data-smart="leastCrowded">Least crowded</span></h3><p>Route 301 • 23 min • 42% occupancy</p><button class="btn secondary" onclick="book('301')" data-smart="select">Select</button></div>
+  </div>
+  <div class="title"><div><h2 data-smart="nearby">Nearby stops</h2><p data-smart="nearbySub">Based on your location permission.</p></div></div>
+  <div class="smart-card"><div class="mini-map">📍 <span id="nearbyStopText">City Mall Stop • 350 m away</span></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn primary" onclick="requestLocation()" data-smart="locate">Update my location</button><button class="btn secondary" onclick="showPage('trips')" data-smart="viewRoutes">View routes</button></div></div>
+</div>
+
+<div class="page" id="driverInfo">
+  <div class="title"><div><h2 data-smart="driverTitle">Driver Safety & Information</h2><p data-smart="driverSub">See verified driver information before and during your trip.</p></div><span class="badge g">VERIFIED</span></div>
+  <div class="smart-grid">
+    <div class="smart-card"><div class="driver-profile"><div class="driver-avatar">AH</div><div><h3>Ahmed Hassan</h3><span class="verified">✓ NEZĀM verified driver</span><p>Driver ID: NZ-205-1842</p></div></div>
+      <div class="driver-meta"><div class="meta-box"><small data-smart="experience">Experience</small><b>8 years</b></div><div class="meta-box"><small data-smart="rating">Passenger rating</small><b>4.8 / 5 ⭐</b></div><div class="meta-box"><small data-smart="trips">Completed trips</small><b>12,450+</b></div><div class="meta-box"><small data-smart="training">Safety training</small><b data-smart="completed">Completed ✓</b></div></div>
+    </div>
+    <div class="smart-card"><h3>🛡️ <span data-smart="security">Security checks</span></h3>
+      <div class="alert"><span>✓</span><div><b data-smart="identity">Identity verified</b><p data-smart="identityText">Driver profile is linked to an official NEZĀM driver ID.</p></div></div>
+      <div class="alert"><span>✓</span><div><b data-smart="vehicle">Vehicle verified</b><p data-smart="vehicleText">Vehicle and route assignment are shown before boarding.</p></div></div>
+      <div class="alert"><span>✓</span><div><b data-smart="monitoring">Trip monitoring</b><p data-smart="monitoringText">The trip can be associated with the booked passenger and route.</p></div></div>
+    </div>
+  </div>
+  <div class="smart-card sos" style="margin-top:16px"><h3>🚨 <span data-smart="safetyTitle">Safety support</span></h3><p data-smart="safetyText">If you feel unsafe, use the safety center or emergency support available in your area.</p><button onclick="showPage('safety')" data-smart="openSafety">Open Safety Center</button></div>
+</div>
+
+<div class="page" id="wallet">
+  <div class="title"><div><h2 data-smart="walletTitle">Digital Wallet</h2><p data-smart="walletSub">Keep your tickets, coupons and balance together.</p></div></div>
+  <div class="smart-grid"><div class="smart-card"><p data-smart="balance">Wallet balance</p><div class="wallet-balance">EGP <span id="walletBalance">0.00</span></div><button class="btn primary" onclick="toast('Demo payment is ready')" data-smart="addMoney">Add balance</button></div>
+  <div class="smart-card"><h3 data-smart="walletTicket">Latest ticket</h3><p>No active ticket yet.</p><button class="btn secondary" onclick="showPage('ticket')" data-smart="openTicket">Open My Ticket</button></div></div>
+</div>
+
+<div class="page" id="challenges">
+  <div class="title"><div><h2 data-smart="challengeTitle">Ride Challenges</h2><p data-smart="challengeSub">Complete challenges and earn bonus points.</p></div><span class="badge g">BONUS</span></div>
+  <div class="smart-card">
+    <div class="challenge"><div><b>🚌 Weekly Rider</b><p data-smart="weekly">Take 5 trips this week → +50 bonus points</p><div class="challenge-progress"><i id="weeklyProgress" style="width:0%"></i></div></div><strong id="weeklyCount">0/5</strong></div>
+    <div class="challenge"><div><b>⭐ Smart Traveler</b><p data-smart="smartTraveler">Choose 3 recommended trips → +30 bonus points</p><div class="challenge-progress"><i id="smartProgress" style="width:0%"></i></div></div><strong id="smartCount">0/3</strong></div>
+    <div class="challenge"><div><b>♻️ Green Rider</b><p data-smart="green">Take 10 public transport trips → +100 bonus points</p><div class="challenge-progress"><i id="greenProgress" style="width:0%"></i></div></div><strong id="greenCount">0/10</strong></div>
+  </div>
+</div>
+
 <div class="page" id="about">
   <div class="title"><div><h2>About NEZĀM</h2><p>A prototype for a smarter transportation future.</p></div></div>
   <div class="grid two"><div class="card"><img src="nezam-logo.jpg" alt="NEZĀM" style="width:120px;border-radius:20px"><h1>NEZĀM</h1><h3>route, ride, right</h3><p class="muted">NEZĀM combines passenger tools, real-time fleet monitoring, smart ticketing, safety systems and data analytics in one platform.</p></div><div class="card"><h3>From transport app → transport intelligence</h3><p class="muted">The platform connects every part of the journey: planning, tracking, capacity, ticket validation, route integrity, emergency reporting, feedback and operations analytics.</p><button class="btn primary" onclick="showPage('control')">Explore the analytics →</button></div></div>
@@ -489,13 +561,14 @@ function findTrip(){
 function book(bus){
  if(localStorage.getItem('nezamSignedIn')!=='1'){
    toast(nezamLanguage==='ar'?'🔐 يجب تسجيل الدخول قبل حجز التذكرة':'🔐 You must sign in before booking a ticket');
-   openAuth('signin');
-   return;
+   openAuth('signin'); return;
  }
  addBookingPoints(bus);
- toast(nezamLanguage==='ar'
-   ?`🎟️ تم حجز الحافلة ${bus} • حصلت على 10 نقاط!`
-   :`🎟️ Bus ${bus} booked • You earned 10 points!`);
+ let count=Number(localStorage.getItem('nezamWeeklyTrips')||0)+1;
+ localStorage.setItem('nezamWeeklyTrips',String(count));
+ if(count===5){setPoints(getPoints()+50);showRewardToast(nezamLanguage==='ar'?'🏆 أكملت تحدي الأسبوع! +50 نقطة':'🏆 Weekly challenge complete! +50 points');}
+ updateSmartFeatures();
+ toast(nezamLanguage==='ar'?`🎟️ تم حجز الحافلة ${bus} • حصلت على 10 نقاط!`:`🎟️ Bus ${bus} booked • You earned 10 points!`);
  showPage('ticket');
 }
 function validateTicket(){
@@ -846,6 +919,36 @@ window.applyLanguage=function(){
 };
 updateRewardsUI();
 applyRewardsLanguage();
+
+
+function updateSmartFeatures(){
+ const n=Number(localStorage.getItem('nezamWeeklyTrips')||0);
+ const ids=[['weeklyCount','weeklyProgress',Math.min(n,5),5],['smartCount','smartProgress',Math.min(n,3),3],['greenCount','greenProgress',Math.min(n,10),10]];
+ ids.forEach(x=>{let e=document.getElementById(x[0]);if(e)e.textContent=x[2]+'/'+x[3];let p=document.getElementById(x[1]);if(p)p.style.width=(x[2]/x[3]*100)+'%';});
+ const el=document.getElementById('nearbyStopText');
+ if(el)el.textContent=typeof userLocation!=='undefined'&&userLocation?'Nearest stop estimate • Location detected':'City Mall Stop • 350 m away';
+}
+const oldReq=window.requestLocation;
+window.requestLocation=function(){oldReq();setTimeout(updateSmartFeatures,1000);};
+function applySmartLanguage(){
+ const ar=nezamLanguage==='ar';
+ const t=ar?{
+ planner:'مخطط الرحلات الذكي',plannerSub:'يقارن نِظام الخيارات ويقترح أفضل رحلة لك.',recommended:'مقترحة لك',recommendText:'أفضل توازن بين السرعة والراحة والاعتمادية والقيمة.',book:'احجز الرحلة +10 نقاط',smartScore:'تقييم الرحلة',time:'الوقت',comfort:'الراحة',reliability:'الاعتمادية',value:'القيمة',options:'مقارنة الخيارات',fastest:'الأسرع',leastCrowded:'الأقل ازدحاماً',select:'اختيار',nearby:'المحطات القريبة',nearbySub:'بناءً على إذن تحديد موقعك.',locate:'تحديث موقعي',viewRoutes:'عرض المسارات',
+ driverTitle:'سلامة ومعلومات السائق',driverSub:'شاهد معلومات السائق الموثقة قبل وأثناء رحلتك.',experience:'الخبرة',rating:'تقييم الركاب',trips:'الرحلات المكتملة',training:'تدريب السلامة',completed:'مكتمل ✓',security:'فحوصات الأمان',identity:'تم التحقق من الهوية',identityText:'ملف السائق مرتبط بمعرّف سائق رسمي في نِظام.',vehicle:'تم التحقق من المركبة',vehicleText:'تظهر بيانات المركبة وتخصيص المسار قبل الصعود.',monitoring:'مراقبة الرحلة',monitoringText:'يمكن ربط الرحلة بالراكب والمسار المحجوز.',safetyTitle:'دعم السلامة',safetyText:'إذا شعرت بعدم الأمان، استخدم مركز السلامة أو دعم الطوارئ المتاح في منطقتك.',openSafety:'فتح مركز السلامة',
+ walletTitle:'المحفظة الرقمية',walletSub:'اجمع التذاكر والكوبونات والرصيد في مكان واحد.',balance:'رصيد المحفظة',addMoney:'إضافة رصيد',walletTicket:'آخر تذكرة',openTicket:'فتح تذكرتي',challengeTitle:'تحديات الرحلات',challengeSub:'أكمل التحديات واحصل على نقاط إضافية.',weekly:'خذ 5 رحلات هذا الأسبوع ← +50 نقطة',smartTraveler:'اختر 3 رحلات مقترحة ← +30 نقطة',green:'خذ 10 رحلات بالنقل العام ← +100 نقطة'
+ }:{
+ planner:'Smart Trip Planner',plannerSub:'NEZĀM compares your options and recommends the best trip.',recommended:'Recommended for you',recommendText:'Best balance of speed, comfort, reliability and value.',book:'Book this trip +10 points',smartScore:'Trip Score',time:'Time',comfort:'Comfort',reliability:'Reliability',value:'Value',options:'Compare options',fastest:'Fastest',leastCrowded:'Least crowded',select:'Select',nearby:'Nearby stops',nearbySub:'Based on your location permission.',locate:'Update my location',viewRoutes:'View routes',
+ driverTitle:'Driver Safety & Information',driverSub:'See verified driver information before and during your trip.',experience:'Experience',rating:'Passenger rating',trips:'Completed trips',training:'Safety training',completed:'Completed ✓',security:'Security checks',identity:'Identity verified',identityText:'Driver profile is linked to an official NEZĀM driver ID.',vehicle:'Vehicle verified',vehicleText:'Vehicle and route assignment are shown before boarding.',monitoring:'Trip monitoring',monitoringText:'The trip can be associated with the booked passenger and route.',safetyTitle:'Safety support',safetyText:'If you feel unsafe, use the safety center or emergency support available in your area.',openSafety:'Open Safety Center',
+ walletTitle:'Digital Wallet',walletSub:'Keep your tickets, coupons and balance together.',balance:'Wallet balance',addMoney:'Add balance',walletTicket:'Latest ticket',openTicket:'Open My Ticket',challengeTitle:'Ride Challenges',challengeSub:'Complete challenges and earn bonus points.',weekly:'Take 5 trips this week → +50 bonus points',smartTraveler:'Choose 3 recommended trips → +30 bonus points',green:'Take 10 public transport trips → +100 bonus points'
+ };
+ document.querySelectorAll('[data-smart]').forEach(e=>{let k=e.getAttribute('data-smart');if(t[k])e.textContent=t[k];});
+ document.querySelectorAll('[data-smart-nav]').forEach(e=>{let k=e.getAttribute('data-smart-nav');e.textContent=ar?({smart:'المخطط الذكي',driver:'سلامة السائق',wallet:'المحفظة',challenges:'التحديات'}[k]||k):({smart:'Smart Planner',driver:'Driver Safety',wallet:'Wallet',challenges:'Challenges'}[k]||k);});
+ updateSmartFeatures();
+}
+const oldLang=window.applyLanguage;
+window.applyLanguage=function(){oldLang();applySmartLanguage();};
+applySmartLanguage();
+updateSmartFeatures();
 
 </script>
 <div class="reward-toast" id="rewardToast"></div>
