@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEZĀM — route, ride, right</title>
+<meta name="description" content="NEZĀM — a data-driven smart transportation management system.">
+<style>
+:root{
+  --navy:#071a35; --navy2:#0c2850; --blue:#1464f4; --cyan:#27b8d9;
+  --green:#22c55e; --yellow:#f4b942; --red:#ef4444; --bg:#f4f7fb;
+  --card:#fff; --text:#17233b; --muted:#6d7b91; --line:#e4eaf2;
+  --shadow:0 12px 35px rgba(7,26,53,.09); --radius:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:linear-gradient(180deg,#06172f,#0a2345);color:#fff;position:fixed;inset:0 auto 0 0;padding:22px 16px;z-index:10;overflow:auto}
+.brand{display:flex;align-items:center;gap:12px;padding:6px 8px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
+.brand img{width:52px;height:52px;border-radius:14px;object-fit:cover;background:#fff}
+.brand strong{font-size:23px;letter-spacing:2px}.brand small{display:block;color:#9eb0ca;font-size:11px;margin-top:2px}
+.nav{padding-top:18px}.nav button{width:100%;border:0;background:transparent;color:#c8d5e7;text-align:left;padding:12px 13px;border-radius:12px;margin:3px 0;display:flex;align-items:center;gap:12px}
+.nav button:hover,.nav button.active{background:rgba(39,184,217,.14);color:#fff}.nav .section{font-size:10px;color:#7186a5;letter-spacing:1.4px;margin:18px 12px 6px}
+.main{margin-left:260px;width:calc(100% - 260px)}
+.topbar{height:74px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:5}
+.status{display:flex;align-items:center;gap:8px;color:#607089;font-size:13px}.dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px #e7f8ed}
+.user{display:flex;align-items:center;gap:10px;font-weight:700}.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#dceaff;color:var(--blue)}
+.content{padding:30px;max-width:1500px;margin:auto}
+.page{display:none}.page.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+.hero{background:linear-gradient(135deg,#081d3a,#123d74);color:#fff;border-radius:28px;padding:34px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.hero:after{content:"";position:absolute;width:320px;height:320px;border-radius:50%;background:rgba(39,184,217,.13);right:-90px;top:-130px}
+.eyebrow{color:#63d5ed;font-weight:800;letter-spacing:1.5px;font-size:12px;text-transform:uppercase}
+.hero h1{font-size:42px;line-height:1.05;margin:10px 0 8px;max-width:680px}.hero p{color:#c9d6e8;max-width:670px}
+.search{margin-top:24px;background:#fff;border-radius:18px;padding:10px;display:flex;gap:10px;max-width:850px;position:relative;z-index:1}
+.field{flex:1;background:#f4f7fb;border:1px solid #e5eaf1;border-radius:12px;padding:12px 14px}.field span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:800}.field input{width:100%;border:0;background:transparent;outline:0;margin-top:4px;color:var(--text)}
+.btn{border:0;border-radius:12px;padding:12px 17px;font-weight:800}.primary{background:var(--blue);color:#fff}.secondary{background:#edf3fb;color:var(--navy)}.danger{background:#fee9e9;color:#bd1e1e}.success{background:#e9f9ef;color:#15803d}
+.title{display:flex;justify-content:space-between;align-items:end;margin:28px 0 15px}.title h2{margin:0;font-size:23px}.title p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,1fr)}.three{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.metric{display:flex;justify-content:space-between;align-items:flex-start}.metric .icon{width:42px;height:42px;border-radius:13px;background:#edf4ff;display:grid;place-items:center;font-size:20px}.metric b{font-size:28px;display:block;margin-top:10px}.muted{color:var(--muted);font-size:13px}.trend{font-size:12px;color:var(--green);font-weight:800}
+.trip{display:grid;grid-template-columns:80px 1fr 110px 120px 100px;align-items:center;gap:12px}.busno{font-weight:900;color:var(--blue)}.route-line{display:flex;align-items:center;gap:8px;font-weight:800}.line{height:2px;background:#cdd7e6;flex:1}.badge{padding:6px 9px;border-radius:999px;font-size:11px;font-weight:900;display:inline-block}.g{background:#e9f9ef;color:#16813f}.y{background:#fff6db;color:#9b6b00}.r{background:#fee8e8;color:#b91c1c}
+.map{height:430px;border-radius:20px;background:#dcebd3;position:relative;overflow:hidden;border:1px solid var(--line)}
+.map:before{content:"";position:absolute;inset:-20%;background:repeating-linear-gradient(30deg,transparent 0 38px,rgba(255,255,255,.75) 39px 44px),repeating-linear-gradient(120deg,transparent 0 62px,rgba(95,139,171,.22) 63px 68px);transform:rotate(-5deg)}
+.water{position:absolute;background:#9edcf0;border-radius:48% 52% 60% 40%;width:38%;height:55%;right:-4%;top:18%;opacity:.8}
+.road{position:absolute;height:8px;background:#fff;border:2px solid #c1cbd5;border-radius:8px;transform-origin:left center}
+.road.a{width:85%;left:3%;top:35%;transform:rotate(16deg)}.road.b{width:80%;left:12%;top:69%;transform:rotate(-12deg)}.road.c{width:72%;left:24%;top:18%;transform:rotate(63deg)}
+.bus{position:absolute;background:#0c3a75;color:#fff;border:3px solid #fff;box-shadow:0 7px 18px rgba(0,0,0,.2);border-radius:11px;padding:7px 9px;font-size:11px;font-weight:900;z-index:2;animation:move 10s linear infinite}
+.bus:before{content:"🚌";margin-right:4px}.bus.b2{animation-duration:13s;animation-delay:-5s}.bus.b3{animation-duration:16s;animation-delay:-8s}
+@keyframes move{0%{left:8%;top:26%}25%{left:38%;top:31%}50%{left:72%;top:54%}75%{left:50%;top:75%}100%{left:8%;top:26%}}
+.map-panel{position:absolute;right:16px;top:16px;background:rgba(255,255,255,.95);border-radius:15px;padding:14px;width:220px;z-index:3;box-shadow:var(--shadow)}
+.map-panel b{font-size:13px}.map-panel .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #edf0f4;font-size:11px}
+.progress{height:8px;background:#e9eef5;border-radius:20px;overflow:hidden;margin-top:9px}.progress i{display:block;height:100%;border-radius:20px;background:var(--green)}.progress.y i{background:var(--yellow)}.progress.r i{background:var(--red)}
+.ticket{background:linear-gradient(135deg,#fff,#eef6ff);border:1px solid #dbe8fa;position:relative;overflow:hidden}.ticket:after{content:"NEZĀM";position:absolute;right:-24px;bottom:18px;font-size:45px;font-weight:900;color:#dce9fa;transform:rotate(-25deg)}
+.qr{width:120px;height:120px;background:repeating-linear-gradient(45deg,#071a35 0 3px,#fff 3px 6px);border:9px solid #fff;box-shadow:0 0 0 1px #d9e2ee}
+.alert{display:flex;gap:12px;align-items:flex-start;padding:13px;border-radius:14px;background:#f7f9fc;margin:9px 0}.alert .aicon{font-size:18px}.alert b{font-size:13px}.alert p{margin:3px 0 0;font-size:11px;color:var(--muted)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.kpi .card{padding:16px}.kpi b{font-size:24px}
+.bar{display:flex;align-items:end;gap:9px;height:170px;padding-top:20px}.bar span{flex:1;background:linear-gradient(180deg,#27b8d9,#1464f4);border-radius:7px 7px 0 0;min-height:10px;position:relative}.bar em{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);font-style:normal;white-space:nowrap}
+.route{display:flex;gap:14px;align-items:flex-start}.route .rail{width:4px;background:#b9d8ff;min-height:125px;border-radius:5px;position:relative}.stop{margin-bottom:18px}.stop:before{content:"";position:absolute;margin-left:-21px;margin-top:3px;width:10px;height:10px;background:#1464f4;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #1464f4}
+.form{display:grid;gap:12px}.form input,.form select,.form textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:#fff;outline:none}.form textarea{min-height:110px;resize:vertical}
+.footer{padding:30px;color:var(--muted);text-align:center;font-size:12px}
+.toast{position:fixed;right:25px;bottom:25px;background:#081d3a;color:#fff;padding:14px 18px;border-radius:13px;box-shadow:var(--shadow);display:none;z-index:30}
+.mobile{display:none}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}.kpi{grid-template-columns:repeat(2,1fr)}.trip{grid-template-columns:60px 1fr 90px}.trip>*:nth-child(4),.trip>*:nth-child(5){display:none}}
+@media(max-width:760px){
+ .sidebar{width:100%;height:66px;bottom:auto;padding:8px 12px}.brand{border:0;padding:0}.brand img{width:46px;height:46px}.brand div{display:none}.nav{display:none}.mobile{display:block;margin-left:auto;background:transparent;color:#fff;border:0;font-size:25px}
+ .main{margin-left:0;margin-top:66px;width:100%}.topbar{height:58px;padding:0 17px}.content{padding:18px}.hero{padding:24px}.hero h1{font-size:31px}.search{display:block}.search .btn{width:100%;margin-top:8px}.cards,.three,.two{grid-template-columns:1fr}.kpi{grid-template-columns:1fr 1fr}.map{height:350px}
+}
+
+/* NEZĀM additions */
+.auth-menu{position:relative}.user-btn{border:0;background:transparent;display:flex;align-items:center;gap:10px;font-weight:800;color:var(--text);padding:4px 8px;border-radius:12px}.user-btn:hover{background:#f0f4fa}.user-menu{display:none;position:absolute;right:0;top:48px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:8px;width:210px;z-index:30}.user-menu.show{display:block}.user-menu button{width:100%;border:0;background:transparent;text-align:left;padding:10px 12px;border-radius:10px}.user-menu button:hover{background:#f4f7fb}.user-menu .logout{color:#bd1e1e}.modal{display:none;position:fixed;inset:0;background:rgba(4,17,36,.58);z-index:100;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.modal-card{background:#fff;border-radius:24px;max-width:470px;width:100%;padding:28px;box-shadow:0 25px 80px rgba(0,0,0,.22);position:relative}.modal-close{position:absolute;right:18px;top:14px;border:0;background:#eef3f9;border-radius:50%;width:34px;height:34px}.form-grid{display:grid;gap:12px}.form-grid input,.form-grid select,.form-grid textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;outline:0}.tabs{display:flex;gap:8px;margin-bottom:18px}.tabs button{flex:1}.prediction{background:linear-gradient(135deg,#081d3a,#123d74);color:#fff;border-radius:20px;padding:22px}.prediction .muted{color:#b8c9df}.confidence{height:8px;background:rgba(255,255,255,.16);border-radius:99px;overflow:hidden}.confidence i{display:block;height:100%;width:92%;background:var(--cyan);border-radius:99px}.kpi{font-size:30px;font-weight:900}.mini-table{width:100%;border-collapse:collapse}.mini-table th,.mini-table td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}.campaign-hero{background:linear-gradient(135deg,#06172f,#1464f4);color:#fff;border-radius:28px;padding:42px;position:relative;overflow:hidden}.campaign-hero:after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:rgba(39,184,217,.14);right:-70px;top:-90px}.rule{border-left:4px solid var(--cyan);padding:12px 16px;background:#f5f9fd;border-radius:12px;margin:10px 0}.video-card{overflow:hidden}.video-card iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:14px}.chat{display:flex;flex-direction:column;gap:12px}.chat-log{height:310px;overflow:auto;background:#f4f7fb;border:1px solid var(--line);border-radius:16px;padding:14px}.bubble{max-width:86%;padding:11px 13px;border-radius:15px;margin:7px 0;line-height:1.45}.bot{background:#fff;border:1px solid var(--line)}.me{background:#e7f0ff;margin-left:auto}.chat-actions{display:flex;gap:8px;flex-wrap:wrap}.chat-actions button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px}.chat-input{display:flex;gap:8px}.chat-input input{flex:1;border:1px solid var(--line);border-radius:12px;padding:12px}.deep-link{display:inline-block;margin-top:8px;color:var(--blue);font-weight:800;text-decoration:none}.campaign-stat{font-size:26px;font-weight:900}.small-card{padding:18px}
+
+
+/* NEZĀM upgraded login/location/language/assistant UI */
+.lang-btn{border:1px solid var(--line);background:#fff;color:var(--navy);padding:8px 12px;border-radius:10px;font-weight:800}
+.lang-btn:hover{background:#f0f5fb}
+.location-box{background:#f5f9ff;border:1px solid #d9e8fb;border-radius:14px;padding:14px;margin:16px 0}
+.location-status{display:flex;align-items:center;gap:9px;font-size:13px}
+.location-dot{width:9px;height:9px;border-radius:50%;background:var(--yellow)}
+.location-dot.ok{background:var(--green)}
+.auth-note{font-size:12px;color:var(--muted);line-height:1.5}
+.rtl{direction:rtl;text-align:right}.rtl .sidebar{left:auto;right:0}.rtl .main{margin-left:0;margin-right:260px}
+.rtl .nav button{text-align:right}.rtl .user-menu{right:auto;left:0}.rtl .me{margin-left:0;margin-right:auto}
+.rtl .map-panel{right:auto;left:16px}.rtl .bubble{direction:rtl}
+@media(max-width:760px){.rtl .main{margin-right:0}.rtl .sidebar{right:0;left:0}.rtl .user-menu{left:0;right:auto}}
+
+/* ===== NEZĀM Points & Coupons ===== */
+.points-card{background:linear-gradient(135deg,#081d3a,#1464f4);color:#fff;border-radius:22px;padding:22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.points-card:after{content:"★";position:absolute;right:20px;top:-8px;font-size:100px;opacity:.08}
+.points-number{font-size:42px;font-weight:900;line-height:1;margin:8px 0}
+.points-progress{height:9px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;margin:12px 0 6px}
+.points-progress i{display:block;height:100%;width:0;background:#27b8d9;border-radius:99px;transition:width .4s}
+.coupon{border:1px dashed #b8c8dc;background:#fff;border-radius:16px;padding:16px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.coupon.locked{opacity:.58}
+.coupon-code{font-weight:900;letter-spacing:1px;color:var(--blue)}
+.reward-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#081d3a;color:#fff;padding:14px 20px;border-radius:15px;box-shadow:var(--shadow);z-index:200;display:none}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><img src="nezam-logo.jpg" alt="NEZĀM logo"><div><strong>NEZĀM</strong><small>route, ride, right</small></div><button class="mobile" onclick="toggleNav()">☰</button></div>
+  <nav class="nav" id="nav">
+    <div class="section">PASSENGER</div>
+    <button class="active" onclick="showPage('home',this)">🏠 Dashboard</button>
+    <button onclick="showPage('trips',this)">🚌 Find Your Trip</button>
+    <button onclick="showPage('live',this)">📍 Live Buses</button>
+    <button onclick="showPage('ticket',this)">🎟️ My Ticket</button>
+    <button onclick="showPage('routes',this)">🗺️ Routes & Stops</button>
+    <button onclick="showPage('safety',this)">🛡️ Safety</button>
+    <button onclick="showPage('feedback',this)">⭐ Feedback</button>
+    <button onclick="showPage('lost',this)">🔎 Lost & Found</button>
+    <div class="section">OPERATIONS</div>
+    <button onclick="showPage('control',this)">📊 Control Center</button>
+    <button onclick="showPage('driver',this)">🚍 Driver Interface</button>
+    <div class="section">INFO</div>
+    <button onclick="showPage('campaign',this)">📢 Campaign</button>
+    <button onclick="showPage('help',this)">🤖 NẒĀM Assistant</button>
+    <button onclick="showPage('rewards',this)">🎁 <span data-reward-nav="rewards">Points & Coupons</span></button>
+    <button onclick="showPage('predictions',this)">🔮 Smart Predictions</button>
+    <button onclick="showPage('about',this)">ℹ️ About NEZĀM</button>
+  </nav>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="status"><span class="dot"></span> <span data-i18n="liveSystem">LIVE SYSTEM • All systems operational</span></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="lang-btn" onclick="toggleLanguage()" id="languageBtn">العربية</button>
+    <div class="auth-menu">
+      <button class="user-btn" onclick="toggleUserMenu()"><span id="userName">Guest</span><span class="avatar" id="avatarLetter">G</span></button>
+      <div class="user-menu" id="userMenu">
+        <button onclick="openAuth('signin')" data-i18n="signIn">🔐 Sign in</button>
+        <button onclick="openAuth('signup')" data-i18n="createAccount">👤 Create account</button>
+        <button onclick="requestLocation()" data-i18n="updateLocation">📍 Update location</button>
+        <button class="logout" onclick="logout()" data-i18n="logout">↪ Log out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="content">
+<!-- HOME -->
+<div class="page active" id="home">
+  <div class="hero">
+    <div class="eyebrow">Smart public transportation</div>
+    <h1>Move smarter.<br>Arrive right.</h1>
+    <p>NEZĀM connects passengers, buses and control centers in one intelligent transportation experience.</p>
+    <div class="search">
+      <label class="field"><span>From 📍</span><input id="from" placeholder="Current location"></label>
+      <label class="field"><span>To 📍</span><input id="to" placeholder="Where are you going?"></label>
+      <button class="btn primary" onclick="findTrip()">Find my trip →</button>
+    </div>
+  </div>
+  <div class="title"><div><h2>Today's network</h2><p>Real-time overview across the city</p></div><button class="btn secondary" onclick="showPage('control')">Open Control Center</button></div>
+  <div class="grid cards">
+    <div class="card metric"><div><span class="muted">Active buses</span><b id="activeBuses">127</b><span class="trend">↑ 4.2% today</span></div><div class="icon">🚌</div></div>
+    <div class="card metric"><div><span class="muted">On-time rate</span><b>87%</b><span class="trend">↑ 3.1%</span></div><div class="icon">⏱️</div></div>
+    <div class="card metric"><div><span class="muted">Avg. occupancy</span><b>76%</b><span class="trend">Healthy</span></div><div class="icon">👥</div></div>
+    <div class="card metric"><div><span class="muted">Safety incidents</span><b>4</b><span class="trend">↓ 12%</span></div><div class="icon">🛡️</div></div>
+  </div>
+  <div class="title"><div><h2>Available Trips</h2><p>Choose based on arrival time and crowding</p></div></div>
+  <div class="grid" style="gap:10px">
+    <div class="card trip"><div class="busno">102</div><div class="route-line">Downtown <span class="line"></span> Station A</div><b>23 min</b><span class="badge g">65% • Comfortable</span><button class="btn secondary" onclick="book('102')">Book</button></div>
+    <div class="card trip"><div class="busno">205</div><div class="route-line">City Mall <span class="line"></span> University</div><b>8 min</b><span class="badge y">84% • Crowded</span><button class="btn secondary" onclick="book('205')">Book</button></div>
+    <div class="card trip"><div class="busno">301</div><div class="route-line">Central <span class="line"></span> Airport</div><b>12 min</b><span class="badge r">98% • Full</span><button class="btn secondary" onclick="showPage('trips')">Next bus</button></div>
+  </div>
+  <div class="title"><div><h2>Live Bus Tracking</h2><p>Buses move in real time • simulated demo data</p></div></div>
+  <div class="map">
+    <div class="water"></div><div class="road a"></div><div class="road b"></div><div class="road c"></div>
+    <div class="bus b1">102 • 65%</div><div class="bus b2">205 • 84%</div><div class="bus b3">301 • 98%</div>
+    <div class="map-panel"><b>Live fleet</b><div class="row"><span>🚌 Bus 102</span><span class="g">On time</span></div><div class="row"><span>🚌 Bus 205</span><span class="y">+8 min</span></div><div class="row"><span>🚌 Bus 301</span><span class="r">Full</span></div><button class="btn primary" style="width:100%;margin-top:10px" onclick="showPage('live')">Open live map</button></div>
+  </div>
+</div>
+
+<!-- TRIPS -->
+<div class="page" id="trips">
+  <div class="title"><div><h2>Find Your Trip</h2><p>Plan a route using live arrival and occupancy data.</p></div></div>
+  <div class="card form" style="max-width:700px">
+    <input placeholder="📍 From — current location">
+    <input placeholder="📍 To — destination">
+    <select><option>Leave now</option><option>Depart at a specific time</option></select>
+    <button class="btn primary" onclick="toast('3 smart routes found')">Find smart routes</button>
+  </div>
+  <div class="title"><div><h2>Recommended</h2><p>NEZĀM balances time, crowding and reliability.</p></div></div>
+  <div class="grid three">
+    <div class="card"><span class="badge g">BEST VALUE</span><h3>Route 7</h3><p class="muted">Direct • 18 min • 65% occupancy</p><button class="btn primary" onclick="book('107')">Book trip</button></div>
+    <div class="card"><span class="badge y">LESS CROWDED</span><h3>Route 12</h3><p class="muted">1 transfer • 24 min • 52% occupancy</p><button class="btn secondary" onclick="book('212')">Book trip</button></div>
+    <div class="card"><span class="badge g">FASTEST</span><h3>Route 3</h3><p class="muted">Direct • 14 min • 81% occupancy</p><button class="btn secondary" onclick="book('303')">Book trip</button></div>
+  </div>
+</div>
+
+<!-- LIVE -->
+<div class="page" id="live">
+  <div class="title"><div><h2>Live Buses</h2><p>GPS positions, speed, occupancy and ETA.</p></div><span class="badge g">● LIVE</span></div>
+  <div class="map"><div class="water"></div><div class="road a"></div><div class="road b"></div><div class="road c"></div><div class="bus b1">102</div><div class="bus b2">205</div><div class="bus b3">301</div>
+  <div class="map-panel"><b>Selected: Bus 205</b><div class="row"><span>Location</span><span>City Mall</span></div><div class="row"><span>Speed</span><span>42 km/h</span></div><div class="row"><span>Occupancy</span><span>84%</span></div><div class="row"><span>ETA</span><span>8 min</span></div><div class="row"><span>Status</span><span class="y">Delayed</span></div></div></div>
+  <div class="title"><div><h2>Fleet status</h2></div></div>
+  <div class="grid three">
+    <div class="card"><b>Bus 102</b><p class="muted">Downtown → Station A</p><div class="progress"><i style="width:65%"></i></div><p class="muted">65% • 23 min • 38 km/h</p></div>
+    <div class="card"><b>Bus 205</b><p class="muted">Mall → University</p><div class="progress y"><i style="width:84%"></i></div><p class="muted">84% • 8 min • 42 km/h</p></div>
+    <div class="card"><b>Bus 301</b><p class="muted">Central → Airport</p><div class="progress r"><i style="width:98%"></i></div><p class="muted">98% • 12 min • 51 km/h</p></div>
+  </div>
+</div>
+
+<!-- TICKET -->
+<div class="page" id="ticket">
+  <div class="title"><div><h2>My Digital Ticket</h2><p>Your ticket is connected to bus capacity.</p></div></div>
+  <div class="card ticket" style="max-width:760px">
+    <div style="display:flex;justify-content:space-between;gap:25px;align-items:center">
+      <div><span class="badge g">VALID • TODAY</span><h2>NEZĀM Smart Ticket</h2><p class="muted">Bus 102 • Route 7</p><h3>Downtown → Station A</h3><p><b>Departure:</b> 18:40 &nbsp; <b>Seat:</b> General</p><button class="btn primary" onclick="validateTicket()">Scan QR → Validate</button></div>
+      <div><div class="qr" aria-label="Demo QR code"></div><p class="muted" style="text-align:center">NZ-102-7842</p></div>
+    </div>
+    <div class="progress" style="margin-top:20px"><i id="capacityBar" style="width:65%"></i></div>
+    <p class="muted">Available capacity: <b id="capacityText">35%</b> • After boarding, capacity updates automatically.</p>
+  </div>
+</div>
+
+<!-- ROUTES -->
+<div class="page" id="routes">
+  <div class="title"><div><h2>Routes & Official Stops</h2><p>GPS geofences keep routes predictable and safe.</p></div></div>
+  <div class="grid two">
+    <div class="card"><span class="badge g">ROUTE 7 • ACTIVE</span><h2>Downtown ↔ University</h2>
+      <div class="route"><div class="rail"></div><div><div class="stop"><b>Station 1</b><div class="muted">Downtown • 18:32</div></div><div class="stop"><b>Station 2</b><div class="muted">City Mall • 18:40</div></div><div class="stop"><b>Station 3</b><div class="muted">University • 18:52</div></div></div></div>
+    </div>
+    <div class="card"><h3>Route integrity</h3><p class="muted">Every official stop has a GPS geofence. The system detects unexpected movement.</p><div class="alert"><span class="aicon">⚠️</span><div><b>Route Deviation Detected</b><p>Demo alert • Bus 205 moved 180m outside Route 7.</p></div></div><div class="alert"><span class="aicon">🛑</span><div><b>Unauthorized Stop</b><p>Demo alert • Investigate before closing the incident.</p></div></div></div>
+  </div>
+</div>
+
+<!-- SAFETY -->
+<div class="page" id="safety">
+  <div class="title"><div><h2>Safety Center</h2><p>Fast reporting sends the right information to the Control Center.</p></div></div>
+  <div class="grid two">
+    <div class="card"><h2>🚨 Emergency</h2><p class="muted">Choose what happened. Your bus, route, location and time are attached automatically in the prototype.</p>
+      <div class="grid two"><button class="btn danger" onclick="emergency('Accident')">🔴 Accident</button><button class="btn danger" onclick="emergency('Medical Emergency')">🔴 Medical Emergency</button><button class="btn danger" onclick="emergency('Harassment')">🔴 Harassment</button><button class="btn danger" onclick="emergency('Unsafe Driving')">🔴 Unsafe Driving</button></div>
+    </div>
+    <div class="card"><h2>Driver Safety Score</h2><div style="display:flex;align-items:center;gap:20px"><b style="font-size:55px;color:var(--green)">92</b><div><b>/ 100 ⭐</b><p class="muted">Excellent driving consistency</p></div></div><p class="muted">Based on speeding, sudden braking, acceleration, route deviation and unauthorized stops. The goal is improvement, not punishment.</p><div class="progress"><i style="width:92%"></i></div></div>
+  </div>
+</div>
+
+<!-- FEEDBACK -->
+<div class="page" id="feedback">
+  <div class="title"><div><h2>Rate Your Trip</h2><p>Your feedback becomes transportation data.</p></div></div>
+  <div class="card" style="max-width:760px">
+    <h3>How was your experience?</h3><div id="stars" style="font-size:32px;letter-spacing:5px">☆ ☆ ☆ ☆ ☆</div>
+    <div class="grid two" style="margin-top:20px"><label>Cleanliness<select><option>Excellent</option><option>Good</option><option>Needs improvement</option></select></label><label>Safety<select><option>Excellent</option><option>Good</option><option>Needs improvement</option></select></label><label>Driver<select><option>Excellent</option><option>Good</option><option>Needs improvement</option></select></label><label>Crowding<select><option>Comfortable</option><option>Crowded</option><option>Too crowded</option></select></label></div>
+    <textarea placeholder="Anything else you'd like NEZĀM to know?" style="margin-top:14px"></textarea><br><button class="btn primary" onclick="toast('Thanks! Your feedback was sent to the operations team.')">Submit feedback</button>
+  </div>
+</div>
+
+<!-- LOST -->
+<div class="page" id="lost">
+  <div class="title"><div><h2>Lost & Found</h2><p>Report an item and help the operations team return it.</p></div></div>
+  <div class="card form" style="max-width:720px"><input placeholder="What did you lose?"><input placeholder="Bus number / route"><input placeholder="Date and approximate time"><textarea placeholder="Describe the item"></textarea><button class="btn primary" onclick="toast('Lost & Found report submitted')">Submit report</button></div>
+</div>
+
+<!-- CONTROL -->
+<div class="page" id="control">
+  <div class="title"><div><h2>Control Center</h2><p>Data-driven transportation management • live demo.</p></div><span class="badge g">LIVE SYSTEM</span></div>
+  <div class="kpi"><div class="card"><span class="muted">Active buses</span><b>127</b></div><div class="card"><span class="muted">On route</span><b>98</b></div><div class="card"><span class="muted">Delayed</span><b>17</b></div><div class="card"><span class="muted">Issues</span><b>12</b></div><div class="card"><span class="muted">Avg delay</span><b>6m</b></div></div>
+  <div class="grid two" style="margin-top:16px">
+    <div class="card"><h3>Live Alerts</h3><div class="alert"><span>⚠️</span><div><b>Bus #201 speeding</b><p>Speed 67 km/h in 50 km/h zone • 1 min ago</p></div></div><div class="alert"><span>⚠️</span><div><b>Route #7 overcrowded</b><p>Occupancy reached 94% • 3 min ago</p></div></div><div class="alert"><span>🛑</span><div><b>Bus #115 delayed</b><p>12 minutes behind schedule • 5 min ago</p></div></div><div class="alert"><span>📍</span><div><b>Unauthorized stop detected</b><p>Bus #205 • GPS geofence event</p></div></div></div>
+    <div class="card"><h3>Most Crowded Routes</h3><p class="muted">Route 7</p><div class="progress"><i style="width:94%"></i></div><p class="muted">Route 12</p><div class="progress y"><i style="width:86%"></i></div><p class="muted">Route 3</p><div class="progress"><i style="width:78%"></i></div></div>
+  </div>
+  <div class="grid two" style="margin-top:16px">
+    <div class="card"><h3>Peak Hours</h3><div class="bar"><span style="height:55%"><em>7–9</em></span><span style="height:34%"><em>10–12</em></span><span style="height:62%"><em>1–3</em></span><span style="height:42%"><em>3–5</em></span><span style="height:88%"><em>5–8</em></span></div></div>
+    <div class="card"><h3>Most Delayed Routes</h3><p><b>Route 12</b> <span class="badge r">+11 min</span></p><p><b>Route 9</b> <span class="badge y">+8 min</span></p><p><b>Route 21</b> <span class="badge y">+7 min</span></p><p class="muted">Use these insights to improve scheduling and fleet allocation.</p></div>
+  </div>
+</div>
+
+<!-- DRIVER -->
+
+<div class="page" id="predictions">
+  <div class="title"><div><h2>Smart Predictions</h2><p>Forecast demand, occupancy and service pressure before it becomes a problem.</p></div><span class="badge g">SIMULATED MODEL</span></div>
+  <div class="grid two">
+    <div class="prediction">
+      <div class="eyebrow">Tomorrow • 08:10 AM</div><h2 style="margin:8px 0">Route 7 is predicted to reach 94% occupancy.</h2>
+      <p class="muted">The model combines historical demand, active bookings, day-of-week and peak-hour patterns.</p>
+      <div class="grid two" style="margin-top:18px"><div><span class="muted">Confidence</span><div class="kpi">92%</div><div class="confidence"><i></i></div></div><div><span class="muted">Expected demand</span><div class="kpi">126</div><span class="muted">passengers</span></div></div>
+      <div class="card" style="margin-top:18px;color:var(--text)"><b>Recommended action</b><p class="muted">Deploy 1 additional bus between 07:50–08:30.</p><button class="btn primary" onclick="toast('Recommendation reviewed by the demo control center')">Review recommendation</button></div>
+    </div>
+    <div class="card">
+      <h3>Prediction performance</h3><p class="muted">Demo model comparison — not live government data.</p>
+      <div class="grid three">
+        <div class="small-card"><span class="muted">Occupancy accuracy</span><div class="campaign-stat">94.2%</div></div>
+        <div class="small-card"><span class="muted">ETA error</span><div class="campaign-stat">1 min</div></div>
+        <div class="small-card"><span class="muted">Demand error</span><div class="campaign-stat">3%</div></div>
+      </div>
+      <table class="mini-table" style="margin-top:12px"><tr><th>Metric</th><th>Predicted</th><th>Actual</th><th>Error</th></tr><tr><td>Occupancy</td><td>92%</td><td>94%</td><td>2%</td></tr><tr><td>ETA</td><td>18 min</td><td>19 min</td><td>1 min</td></tr><tr><td>Demand</td><td>120</td><td>116</td><td>3%</td></tr></table>
+    </div>
+  </div>
+  <div class="grid three" style="margin-top:18px">
+    <div class="card"><span class="badge r">HIGH DEMAND</span><h3>Route 7</h3><p class="muted">08:00–08:30 • 94% predicted</p></div>
+    <div class="card"><span class="badge y">DELAY RISK</span><h3>Route 3</h3><p class="muted">17:30–18:15 • 11 min expected delay</p></div>
+    <div class="card"><span class="badge g">STABLE</span><h3>Route 12</h3><p class="muted">Normal demand • 58% predicted</p></div>
+  </div>
+</div>
+
+<div class="page" id="help">
+  <div class="title"><div><h2>NẒĀM Assistant</h2><p>Ask a question and jump directly to the tool that can solve it.</p></div><span class="badge g">SMART HELP</span></div>
+  <div class="card chat">
+    <div class="chat-log" id="chatLog">
+      <div class="bubble bot"><b>Hi! I'm NẒĀM Assistant.</b><br>Tell me what went wrong and I'll guide you to the right place in the website.</div>
+      <div class="chat-actions">
+        <button onclick="quickHelp('bus')">🚌 My bus is late</button><button onclick="quickHelp('crowd')">👥 The bus is crowded</button><button onclick="quickHelp('ticket')">🎟️ Ticket problem</button><button onclick="quickHelp('safety')">🛡️ Safety issue</button><button onclick="quickHelp('route')">🗺️ I need a route</button><button onclick="quickHelp('lost')">🔎 Lost item</button>
+      </div>
+    </div>
+    <div class="chat-input"><input id="chatInput" placeholder="Ask: My ticket isn't working..."><button class="btn primary" onclick="sendChat()">Ask →</button></div>
+  </div>
+</div>
+<div class="page" id="driver">
+  <div class="title"><div><h2>Driver Interface</h2><p>A focused view designed for safe, simple operation.</p></div></div>
+  <div class="grid two">
+    <div class="card"><span class="badge g">ROUTE 7 • ACTIVE</span><h2>Downtown → University</h2><h3>Next stop: Station 2</h3><div class="route"><div class="rail"></div><div><div class="stop"><b>Station 1 ✓</b></div><div class="stop"><b>Station 2 →</b></div><div class="stop"><b>Station 3</b></div></div></div></div>
+    <div class="card" style="text-align:center"><span class="muted">CURRENT SPEED</span><div style="font-size:65px;font-weight:900;margin:15px">42 <small style="font-size:20px">km/h</small></div><span class="badge g">SPEED LIMIT: 50 km/h</span><p class="muted">Driver safety score: <b>92/100</b></p></div>
+  </div>
+</div>
+
+<!-- CAMPAIGN -->
+<div class="page" id="campaign">
+  <div class="campaign-hero">
+    <div class="eyebrow">THE NEZĀM CAMPAIGN</div>
+    <h1>Route. Ride. Right.</h1>
+    <p style="max-width:700px;color:#d7e4f5;font-size:17px">A better journey starts with better information, safer choices and respect for the people sharing the road with you.</p>
+    <button class="btn primary" onclick="showPage('trips')">Plan a smarter ride →</button>
+  </div>
+
+  <div class="title"><div><h2>Why does this matter?</h2><p>Small sources of disorder create a harder journey for everyone.</p></div></div>
+  <div class="grid three">
+    <div class="card"><h3>👥 Overcrowding</h3><p class="muted">Too many passengers means less comfort and higher risk.</p></div>
+    <div class="card"><h3>⏱️ Delays</h3><p class="muted">Unpredictable stops and traffic make arrival uncertain.</p></div>
+    <div class="card"><h3>🚏 Random Stops</h3><p class="muted">Unplanned stops disrupt routes and increase disorder.</p></div>
+    <div class="card"><h3>🏎️ Unsafe Driving</h3><p class="muted">Speeding and harsh driving can put passengers at risk.</p></div>
+    <div class="card"><h3>🎟️ Ticket Confusion</h3><p class="muted">Outdated information can create disputes at boarding.</p></div>
+    <div class="card"><h3>📊 Data Gaps</h3><p class="muted">Better decisions need timely, reliable information.</p></div>
+  </div>
+
+  <div class="title"><div><h2>Ride Right — Know the Rules</h2><p>Simple habits that make public transport safer and more organized.</p></div></div>
+  <div class="grid two">
+    <div class="card"><h3>🚌 Before boarding</h3><div class="rule">🟢 Wait at the official stop.</div><div class="rule">🟢 Let passengers exit before boarding.</div><div class="rule">🟢 Have your ticket ready.</div></div>
+    <div class="card"><h3>🚍 While boarding</h3><div class="rule">🟢 Don't push or rush.</div><div class="rule">🟢 Keep doors and aisles clear.</div><div class="rule">🟢 Hold the handrail when needed.</div></div>
+    <div class="card"><h3>❤️ Respect the ride</h3><div class="rule">🟢 Give priority seats to people who need them.</div><div class="rule">🟢 Keep the vehicle clean.</div><div class="rule">🟢 Respect every passenger.</div></div>
+    <div class="card"><h3>🚫 Don't</h3><div class="rule">🚫 Don't distract the driver.</div><div class="rule">🚫 Don't block doors or emergency equipment.</div><div class="rule">🚫 Don't board outside official stops.</div></div>
+  </div>
+
+  <div class="title"><div><h2>When something goes wrong</h2><p>Know the right action instead of reacting blindly.</p></div></div>
+  <div class="grid three">
+    <div class="card"><h3>🩺 Medical</h3><p class="muted">Stay calm, alert the driver and use Emergency Assistance when necessary.</p><button class="btn danger" onclick="showPage('safety')">Open Safety →</button></div>
+    <div class="card"><h3>🛡️ Harassment</h3><p class="muted">Move to a safer area if possible and use Silent SOS or Report.</p><button class="btn danger" onclick="showPage('safety')">Get help →</button></div>
+    <div class="card"><h3>🏎️ Unsafe driving</h3><p class="muted">Don't confront the driver. Report the issue with route and trip details.</p><button class="btn danger" onclick="showPage('safety')">Report →</button></div>
+  </div>
+
+  <div class="title"><div><h2>Watch. Learn. Ride Better.</h2><p>Awareness content can be embedded from trusted transport and road-safety sources.</p></div></div>
+  <div class="grid two">
+    <div class="card video-card"><h3>🛡️ Passenger safety</h3><iframe src="https://www.youtube.com/embed?listType=search&list=public%20transport%20passenger%20safety" title="Public transport passenger safety"></iframe><p class="helper">YouTube search embed — replace with a verified official awareness video before final presentation.</p></div>
+    <div class="card video-card"><h3>🚦 Road safety awareness</h3><iframe src="https://www.youtube.com/embed?listType=search&list=road%20safety%20awareness" title="Road safety awareness"></iframe><p class="helper">YouTube search embed — choose a trusted official source for the final version.</p></div>
+  </div>
+
+  <div class="title"><div><h2>7 Days. 7 Better Rides.</h2><p>Turn the campaign into a habit.</p></div></div>
+  <div class="grid three">
+    <div class="card"><b>Day 1</b><p class="muted">Use an official stop.</p></div><div class="card"><b>Day 2</b><p class="muted">Let passengers exit first.</p></div><div class="card"><b>Day 3</b><p class="muted">Keep the aisle clear.</p></div>
+    <div class="card"><b>Day 4</b><p class="muted">Give priority seating when needed.</p></div><div class="card"><b>Day 5</b><p class="muted">Keep your ride clean.</p></div><div class="card"><b>Day 6</b><p class="muted">Report a real problem.</p></div>
+  </div>
+  <div class="card" style="margin-top:18px;text-align:center"><h2>Day 7: Help someone have a better ride.</h2><p class="muted">I don't just take public transport. I help make it better.</p><button class="btn primary" onclick="toast('Campaign challenge joined! #RideRight')">Join the campaign →</button></div>
+
+  <div class="title"><div><h2>Meet the Team</h2><p>The people behind NEZĀM.</p></div></div>
+  <div class="grid three">
+    <div class="card"><h3>رحمة</h3><b>المتحكمة في مصير الجميع</b><p class="muted">(The Leader)</p></div>
+    <div class="card"><h3>فاطمة</h3><b>وزيرة الـCtrl + Z</b><p class="muted">(The Slides Builder)</p></div>
+    <div class="card"><h3>جنى</h3><b>المسؤولة عن إن محدش يزهق</b><p class="muted">(The Video Editor)</p></div>
+    <div class="card"><h3>حبيبة</h3><b>اللي بتقول "لا، كده شكله وحش"</b><p class="muted">(The Designer)</p></div>
+    <div class="card"><h3>ريماس</h3><b>اللي إحنا بنقولها "سهلة" وهي اللي بتدفع الثمن</b><p class="muted">(The Web Developer)</p></div>
+  </div>
+</div>
+
+
+<!-- REWARDS -->
+<div class="page" id="rewards">
+  <div class="title">
+    <div>
+      <h2 data-reward="title">Points & Coupons</h2>
+      <p data-reward="subtitle">Earn points every time you book a trip and turn them into useful coupons.</p>
+    </div>
+    <span class="badge g">REWARDS</span>
+  </div>
+
+  <div class="grid two">
+    <div class="points-card">
+      <span style="opacity:.8" data-reward="yourPoints">YOUR POINTS</span>
+      <div class="points-number" id="pointsBalance">0</div>
+      <span data-reward="pointsLabel">points available</span>
+      <div class="points-progress"><i id="pointsProgress"></i></div>
+      <small id="pointsNext">0 / 100 points to your next coupon</small>
+    </div>
+
+    <div class="card">
+      <h3 data-reward="howTitle">How it works</h3>
+      <div class="alert"><span>🎟️</span><div><b data-reward="earn">Book a trip</b><p data-reward="earnText">Earn 10 points for every successful booking.</p></div></div>
+      <div class="alert"><span>⭐</span><div><b data-reward="collect">Collect points</b><p data-reward="collectText">Your points are saved automatically in your account.</p></div></div>
+      <div class="alert"><span>🎁</span><div><b data-reward="redeem">Get coupons</b><p data-reward="redeemText">Reach 100 points and unlock a 10% transport coupon.</p></div></div>
+    </div>
+  </div>
+
+  <div class="title">
+    <div><h2 data-reward="coupons">My Coupons</h2><p data-reward="couponSub">Redeem your points for discounts.</p></div>
+  </div>
+  <div class="grid two">
+    <div class="coupon" id="coupon10">
+      <div><b>🎟️ 10% OFF</b><p class="muted" data-reward="coupon10Text">Costs 100 points • Valid for one eligible trip</p><span class="coupon-code" id="couponCode">LOCKED</span></div>
+      <button class="btn primary" onclick="redeemCoupon()" id="redeemBtn" data-reward="redeemBtn">Redeem</button>
+    </div>
+    <div class="coupon locked">
+      <div><b>🎁 20% OFF</b><p class="muted" data-reward="coupon20Text">Costs 200 points • Coming soon</p><span class="coupon-code">LOCKED</span></div>
+      <button class="btn secondary" disabled data-reward="soon">Coming soon</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3 data-reward="history">Rewards history</h3>
+    <div id="rewardsHistory"><p class="muted" data-reward="noHistory">No bookings yet. Book your first trip to start earning points!</p></div>
+  </div>
+</div>
+
+<div class="page" id="about">
+  <div class="title"><div><h2>About NEZĀM</h2><p>A prototype for a smarter transportation future.</p></div></div>
+  <div class="grid two"><div class="card"><img src="nezam-logo.jpg" alt="NEZĀM" style="width:120px;border-radius:20px"><h1>NEZĀM</h1><h3>route, ride, right</h3><p class="muted">NEZĀM combines passenger tools, real-time fleet monitoring, smart ticketing, safety systems and data analytics in one platform.</p></div><div class="card"><h3>From transport app → transport intelligence</h3><p class="muted">The platform connects every part of the journey: planning, tracking, capacity, ticket validation, route integrity, emergency reporting, feedback and operations analytics.</p><button class="btn primary" onclick="showPage('control')">Explore the analytics →</button></div></div>
+</div>
+
+<div class="footer">NEZĀM • route, ride, right • Professional interactive prototype • Demo data only</div>
+</section>
+</main>
+</div>
+
+<div class="modal" id="authModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeAuth()">×</button>
+    <div class="tabs"><button class="btn primary" id="signInTab" onclick="switchAuth('signin')">Sign in</button><button class="btn secondary" id="signUpTab" onclick="switchAuth('signup')">Create account</button></div>
+    <div id="authTitle"><h2>Welcome back to NEZĀM</h2><p class="muted">Sign in to save trips, tickets and preferences.</p></div>
+    <div class="form-grid">
+      <input id="authName" placeholder="Full name" style="display:none">
+      <input id="authEmail" type="email" placeholder="Email">
+      <input id="authPassword" type="password" placeholder="Password">
+      <label id="termsRow" class="helper" style="display:none"><input type="checkbox" id="terms"> I agree to the Terms & Safety Rules</label>
+      <button class="btn primary" id="authSubmit" onclick="submitAuth()">Sign in →</button>
+    </div>
+    <p class="helper" style="margin-top:14px">Demo authentication only — no real account or payment data is stored.</p>
+  </div>
+</div>
+<div class="modal" id="locationModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeLocation()">×</button>
+    <div class="eyebrow" data-i18n="locationAccess">LOCATION ACCESS</div>
+    <h2 data-i18n="locationTitle">Find your current location</h2>
+    <p class="muted" data-i18n="locationText">NEZĀM uses your location to suggest nearby routes, improve trip planning and attach your location to safety reports.</p>
+    <div class="location-box">
+      <div class="location-status"><span class="location-dot" id="locationDot"></span><b id="locationStatus">Waiting for permission…</b></div>
+      <p class="auth-note" id="locationDetails">Your browser will ask for permission. You can deny it and still use the demo, but location-based features will be limited.</p>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn primary" style="flex:1" onclick="requestLocation()" data-i18n="allowLocation">Allow location</button>
+      <button class="btn secondary" onclick="closeLocation()" data-i18n="later">Later</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const pages=[...document.querySelectorAll('.page')];
+function showPage(id,btn){
+  pages.forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
+  clearTimeout(window.tt); window.tt=setTimeout(()=>t.style.display='none',3000);
+}
+function findTrip(){
+  const from=document.getElementById('from').value||'your location';
+  const to=document.getElementById('to').value||'your destination';
+  toast(`Smart route found: ${from} → ${to}`);
+  showPage('trips');
+}
+function book(bus){
+ if(localStorage.getItem('nezamSignedIn')!=='1'){
+   toast(nezamLanguage==='ar'?'🔐 يجب تسجيل الدخول قبل حجز التذكرة':'🔐 You must sign in before booking a ticket');
+   openAuth('signin');
+   return;
+ }
+ addBookingPoints(bus);
+ toast(nezamLanguage==='ar'
+   ?`🎟️ تم حجز الحافلة ${bus} • حصلت على 10 نقاط!`
+   :`🎟️ Bus ${bus} booked • You earned 10 points!`);
+ showPage('ticket');
+}
+function validateTicket(){
+  document.getElementById('capacityBar').style.width='66%';
+  document.getElementById('capacityText').textContent='34%';
+  toast('✓ Ticket validated • Available capacity updated: -1');
+}
+function emergency(type){
+  toast(`🚨 ${type} report sent to Control Center with bus, route, location and time.`);
+}
+function toggleNav(){
+  const n=document.getElementById('nav');
+  n.style.display=n.style.display==='block'?'none':'block';
+}
+document.getElementById('stars').addEventListener('click',e=>{
+  const r=e.target.getBoundingClientRect(); const x=e.clientX-r.left;
+  const n=Math.max(1,Math.min(5,Math.ceil(x/(r.width/5))));
+  document.getElementById('stars').textContent='★ '.repeat(n)+'☆ '.repeat(5-n);
+});
+setInterval(()=>{
+  const el=document.getElementById('activeBuses');
+  if(el && document.getElementById('home').classList.contains('active')){
+    el.textContent=127+Math.floor(Math.random()*5)-2;
+  }
+},2500);
+
+let authMode='signin';
+function toggleUserMenu(){document.getElementById('userMenu').classList.toggle('show')}
+function openAuth(mode='signin'){authMode=mode;switchAuth(mode);document.getElementById('authModal').classList.add('show')}
+function closeAuth(){document.getElementById('authModal').classList.remove('show')}
+function switchAuth(mode){
+  authMode=mode;
+  const signup=mode==='signup';
+  document.getElementById('authName').style.display=signup?'block':'none';
+  document.getElementById('termsRow').style.display=signup?'block':'none';
+  document.getElementById('authTitle').innerHTML=signup?'<h2>Create your NEZĀM account</h2><p class="muted">Save trips, tickets and preferences in one place.</p>':'<h2>Welcome back to NEZĀM</h2><p class="muted">Sign in to save trips, tickets and preferences.</p>';
+  document.getElementById('authSubmit').textContent=signup?'Create account →':'Sign in →';
+}
+function submitAuth(){
+  const name=document.getElementById('authName').value.trim();
+  const email=document.getElementById('authEmail').value.trim();
+  if(!email){toast('Please enter your email');return}
+  if(authMode==='signup' && !name){toast('Please enter your name');return}
+  if(authMode==='signup' && !document.getElementById('terms').checked){toast('Please accept the Terms & Safety Rules');return}
+  const savedName=authMode==='signup'?name:(localStorage.getItem('nezamName')||email.split('@')[0]||'Passenger');
+  localStorage.setItem('nezamSignedIn','1');localStorage.setItem('nezamName',savedName);
+  updateAuthUI();closeAuth();toast(`✓ Welcome, ${savedName}`);
+}
+function updateAuthUI(){
+  const signed=localStorage.getItem('nezamSignedIn')==='1';
+  const name=localStorage.getItem('nezamName')||'Guest';
+  document.getElementById('userName').textContent=signed?name:'Guest';
+  document.getElementById('userRole').textContent=signed?'Passenger':'Not signed in';
+  document.getElementById('avatarLetter').textContent=signed?name.charAt(0).toUpperCase():'G';
+}
+function logout(){localStorage.removeItem('nezamSignedIn');localStorage.removeItem('nezamName');updateAuthUI();toggleUserMenu();toast('You have been logged out')}
+function quickHelp(type){
+  const answers={
+    bus:['If your bus is late, check the latest ETA and current route status.','live','📍 Track my bus →'],
+    crowd:['If the bus is crowded, NẒĀM can compare alternatives by occupancy and travel time.','trips','👥 Find a less crowded trip →'],
+    ticket:['Check your digital ticket status and validate it against the selected trip.','ticket','🎟️ Check my ticket →'],
+    safety:['For an immediate safety issue, use the Safety Center. Silent SOS is available for urgent situations.','safety','🛡️ Open Safety Center →'],
+    route:['Search your destination and NẒĀM will compare available routes, time and occupancy.','trips','🗺️ Find a route →'],
+    lost:['Use Lost & Found to submit the bus, route, time and item details.','lost','🔎 Open Lost & Found →']
+  };
+  addChat('me',type==='bus'?'My bus is late':type==='crowd'?'The bus is crowded':type==='ticket'?'I have a ticket problem':type==='safety'?'I have a safety issue':type==='route'?'I need a route':'I lost something');
+  const [text,page,label]=answers[type];addChat('bot',text, page, label);
+}
+function addChat(role,text,page,label){
+  const log=document.getElementById('chatLog');const b=document.createElement('div');b.className='bubble '+role;b.innerHTML=text+(page?`<br><a href="#" class="deep-link" onclick="showPage('${page}');return false">${label}</a>`:'');log.appendChild(b);log.scrollTop=log.scrollHeight;
+}
+function sendChat(){
+  const input=document.getElementById('chatInput');const q=input.value.trim().toLowerCase();if(!q)return;
+  addChat('me',input.value);input.value='';
+  let type=q.includes('late')||q.includes('delay')?'bus':q.includes('crowd')||q.includes('full')?'crowd':q.includes('ticket')?'ticket':q.includes('safe')||q.includes('harass')||q.includes('driver')?'safety':q.includes('lost')||q.includes('bag')?'lost':'route';
+  setTimeout(()=>quickHelp(type),250);
+}
+window.addEventListener('click',e=>{if(!e.target.closest('.auth-menu'))document.getElementById('userMenu')?.classList.remove('show')});
+updateAuthUI();
+
+
+/* ===== NEZĀM upgrade layer ===== */
+let nezamLanguage=localStorage.getItem('nezamLanguage')||'en';
+let userLocation=null;
+
+const I18N={
+ en:{
+  liveSystem:'LIVE SYSTEM • All systems operational',signIn:'🔐 Sign in',createAccount:'👤 Create account',
+  updateLocation:'📍 Update location',logout:'↪ Log out',locationAccess:'LOCATION ACCESS',
+  locationTitle:'Find your current location',
+  locationText:'NEZĀM uses your location to suggest nearby routes, improve trip planning and attach your location to safety reports.',
+  allowLocation:'Allow location',later:'Later'
+ },
+ ar:{
+  liveSystem:'النظام يعمل مباشرة • جميع الأنظمة تعمل',signIn:'🔐 تسجيل الدخول',createAccount:'👤 إنشاء حساب',
+  updateLocation:'📍 تحديث الموقع',logout:'↪ تسجيل الخروج',locationAccess:'الوصول إلى الموقع',
+  locationTitle:'تحديد موقعك الحالي',
+  locationText:'يستخدم نظام نِظام موقعك لاقتراح المسارات القريبة وتحسين التخطيط للرحلة وإرفاق موقعك ببلاغات السلامة.',
+  allowLocation:'السماح بالموقع',later:'لاحقاً'
+ }
+};
+
+function applyLanguage(){
+ const ar=nezamLanguage==='ar';
+ document.documentElement.lang=ar?'ar':'en';
+ document.body.classList.toggle('rtl',ar);
+ document.getElementById('languageBtn').textContent=ar?'English':'العربية';
+ document.querySelectorAll('[data-i18n]').forEach(el=>{
+   const k=el.getAttribute('data-i18n');
+   if(I18N[nezamLanguage][k]) el.textContent=I18N[nezamLanguage][k];
+ });
+ translateCoreUI(ar);
+}
+function toggleLanguage(){
+ nezamLanguage=nezamLanguage==='en'?'ar':'en';
+ localStorage.setItem('nezamLanguage',nezamLanguage);
+ applyLanguage();
+ toast(nezamLanguage==='ar'?'تم تغيير اللغة إلى العربية':'Language changed to English');
+}
+function translateCoreUI(ar){
+ const map=ar?{
+  'Dashboard':'لوحة التحكم','Find Your Trip':'ابحث عن رحلتك','Live Buses':'الحافلات المباشرة',
+  'My Ticket':'تذكرتي','Routes & Stops':'المسارات والمحطات','Safety':'السلامة','Feedback':'التقييم',
+  'Lost & Found':'المفقودات والموجودات','Control Center':'مركز التحكم','Driver Interface':'واجهة السائق',
+  'Campaign':'الحملة','NẒĀM Assistant':'مساعد نِظام','Smart Predictions':'التنبؤات الذكية','About NEZĀM':'عن نِظام'
+ }:{
+  'لوحة التحكم':'Dashboard','ابحث عن رحلتك':'Find Your Trip','الحافلات المباشرة':'Live Buses',
+  'تذكرتي':'My Ticket','المسارات والمحطات':'Routes & Stops','السلامة':'Safety','التقييم':'Feedback',
+  'المفقودات والموجودات':'Lost & Found','مركز التحكم':'Control Center','واجهة السائق':'Driver Interface',
+  'الحملة':'Campaign','مساعد نِظام':'NẒĀM Assistant','التنبؤات الذكية':'Smart Predictions','عن نِظام':'About NEZĀM'
+ };
+ document.querySelectorAll('.nav button').forEach(el=>{
+   const key=el.textContent.trim();
+   if(map[key]) el.textContent=map[key];
+ });
+}
+function closeLocation(){document.getElementById('locationModal').classList.remove('show')}
+function openLocation(){document.getElementById('locationModal').classList.add('show')}
+function requestLocation(){
+ if(!navigator.geolocation){
+   document.getElementById('locationStatus').textContent=nezamLanguage==='ar'?'المتصفح لا يدعم الموقع':'Geolocation is not supported';
+   return;
+ }
+ document.getElementById('locationStatus').textContent=nezamLanguage==='ar'?'جاري طلب الإذن…':'Requesting permission…';
+ navigator.geolocation.getCurrentPosition(pos=>{
+   userLocation={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
+   localStorage.setItem('nezamLocation',JSON.stringify(userLocation));
+   document.getElementById('locationDot').classList.add('ok');
+   document.getElementById('locationStatus').textContent=nezamLanguage==='ar'?'تم تحديد موقعك ✓':'Location detected ✓';
+   document.getElementById('locationDetails').textContent=(nezamLanguage==='ar'?'الإحداثيات: ':'Coordinates: ')+userLocation.lat.toFixed(4)+', '+userLocation.lng.toFixed(4);
+   const from=document.getElementById('from'); if(from) from.value=userLocation.lat.toFixed(4)+', '+userLocation.lng.toFixed(4);
+   toast(nezamLanguage==='ar'?'تم تحديد موقعك الحالي':'Your current location was detected');
+   setTimeout(closeLocation,700);
+ },()=>{
+   document.getElementById('locationStatus').textContent=nezamLanguage==='ar'?'تم رفض إذن الموقع':'Location permission denied';
+   document.getElementById('locationDetails').textContent=nezamLanguage==='ar'?'يمكنك السماح بالموقع من إعدادات المتصفح لاحقاً.':'You can allow location later from your browser settings.';
+ },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+}
+
+/* Stronger demo authentication. Real production authentication needs a server. */
+function submitAuth(){
+ const name=document.getElementById('authName').value.trim();
+ const email=document.getElementById('authEmail').value.trim();
+ const password=document.getElementById('authPassword').value;
+ if(!email){toast(nezamLanguage==='ar'?'أدخل البريد الإلكتروني':'Please enter your email');return}
+ if(!/^\S+@\S+\.\S+$/.test(email)){toast(nezamLanguage==='ar'?'أدخل بريداً إلكترونياً صحيحاً':'Please enter a valid email');return}
+ if(password.length<6){toast(nezamLanguage==='ar'?'كلمة المرور يجب أن تكون 6 أحرف على الأقل':'Password must be at least 6 characters');return}
+ if(authMode==='signup' && !name){toast(nezamLanguage==='ar'?'أدخل اسمك':'Please enter your name');return}
+ if(authMode==='signup' && !document.getElementById('terms').checked){toast(nezamLanguage==='ar'?'وافق على الشروط':'Please accept the Terms & Safety Rules');return}
+ const savedName=authMode==='signup'?name:(localStorage.getItem('nezamName')||email.split('@')[0]||'Passenger');
+ localStorage.setItem('nezamSignedIn','1');
+ localStorage.setItem('nezamName',savedName);
+ localStorage.setItem('nezamEmail',email);
+ updateAuthUI();closeAuth();
+ toast(nezamLanguage==='ar'?`✓ أهلاً ${savedName}`:`✓ Welcome, ${savedName}`);
+ setTimeout(openLocation,250);
+}
+function updateAuthUI(){
+ const signed=localStorage.getItem('nezamSignedIn')==='1';
+ const name=localStorage.getItem('nezamName')||'Guest';
+ document.getElementById('userName').textContent=signed?name:'Guest';
+ document.getElementById('avatarLetter').textContent=signed?name.charAt(0).toUpperCase():'G';
+}
+function logout(){
+ localStorage.removeItem('nezamSignedIn');localStorage.removeItem('nezamName');localStorage.removeItem('nezamEmail');
+ updateAuthUI();document.getElementById('userMenu').classList.remove('show');
+ toast(nezamLanguage==='ar'?'تم تسجيل الخروج':'You have been logged out');
+}
+
+/* Booking is blocked until a user is signed in. */
+function book(bus){
+ if(localStorage.getItem('nezamSignedIn')!=='1'){
+   toast(nezamLanguage==='ar'?'🔐 يجب تسجيل الدخول قبل حجز التذكرة':'🔐 You must sign in before booking a ticket');
+   openAuth('signin');
+   return;
+ }
+ toast((nezamLanguage==='ar'?'تم اختيار الحافلة ':'Bus ')+bus+(nezamLanguage==='ar'?' • التذكرة الرقمية جاهزة':' selected • Your digital ticket is ready'));
+ showPage('ticket');
+}
+
+/* Smart local assistant: transport intents, navigation, bilingual responses and basic calculations. */
+function assistantReply(raw){
+ const q=raw.toLowerCase().trim(), ar=nezamLanguage==='ar';
+ const nav=(page,text)=>({text,page});
+ if(/^(hi|hello|hey|مرحبا|اهلا|أهلا|السلام عليكم)/i.test(q))
+   return {text:ar?'مرحباً! أنا مساعد نِظام. اسألني عن الرحلات، الحافلات، التذاكر، السلامة، الموقع أو أي سؤال عام.':'Hello! I’m NẒĀM Assistant. Ask me about trips, buses, tickets, safety, location or a general question.'};
+ if(q.includes('who are you')||q.includes('what are you')||q.includes('مين انت')||q.includes('من انت'))
+   return {text:ar?'أنا مساعد نِظام الذكي، أساعدك في استخدام المنصة والعثور على المعلومات المناسبة.':'I’m NẒĀM’s smart assistant. I help you use the platform and find the right information.'};
+ if(q.includes('late')||q.includes('delay')||q.includes('متأخر')||q.includes('تأخير'))
+   return nav('live',ar?'افتح الحافلات المباشرة لمتابعة الموقع ووقت الوصول والتأخير.':'Open Live Buses to check position, ETA and delays.');
+ if(q.includes('crowd')||q.includes('full')||q.includes('زحمة')||q.includes('مزدحم'))
+   return nav('trips',ar?'سأساعدك في مقارنة المسارات حسب وقت الوصول ونسبة الازدحام.':'I can help compare routes by arrival time and occupancy.');
+ if(q.includes('ticket')||q.includes('تذكرة'))
+   return nav('ticket',ar?'افتح تذكرتي للتحقق من التذكرة الرقمية.':'Open My Ticket to check your digital ticket.');
+ if(q.includes('safety')||q.includes('emergency')||q.includes('harass')||q.includes('سلامة')||q.includes('طوارئ'))
+   return nav('safety',ar?'افتح مركز السلامة لإرسال البلاغ المناسب.':'Open Safety Center to send the appropriate report.');
+ if(q.includes('route')||q.includes('trip')||q.includes('مسار')||q.includes('رحلة')||q.includes('اروح'))
+   return nav('trips',ar?'افتح البحث عن الرحلة لمقارنة المسارات.':'Open Find Your Trip to compare routes.');
+ if(q.includes('lost')||q.includes('bag')||q.includes('مفقود')||q.includes('شنطة'))
+   return nav('lost',ar?'افتح المفقودات والموجودات لتسجيل البلاغ.':'Open Lost & Found to submit a report.');
+ if(q.includes('location')||q.includes('موقعي')||q.includes('الموقع'))
+   return {text:userLocation?(ar?'تم تحديد موقعك الحالي بالفعل.':'Your current location is already detected.'):(ar?'يمكنني طلب إذن الموقع الآن.':'I can request your location permission now.'),action:!userLocation?'location':null};
+ const math=q.replace(/what is|calculate|احسب|يساوي|=\?/g,'').trim();
+ if(/^[0-9+\-*/().%\s]+$/.test(math)&&/[0-9]/.test(math)){
+   try{
+     const safe=math.replace(/%/g,'/100');
+     const result=Function('"use strict";return ('+safe+')')();
+     if(Number.isFinite(result)) return {text:ar?`النتيجة هي ${result}`:`The answer is ${result}.`};
+   }catch(e){}
+ }
+ return {text:ar
+   ?'أستطيع مساعدتك في الرحلات، التذاكر، الحافلات، السلامة، الموقع، المفقودات والعمليات. اكتب سؤالك بالتفصيل وسأحاول مساعدتك.'
+   :'I can help with trips, tickets, buses, safety, location, Lost & Found and operations. Write your question in detail and I’ll try to help.'};
+}
+function sendChat(){
+ const input=document.getElementById('chatInput'),raw=input.value.trim(); if(!raw)return;
+ addChat('me',raw);input.value='';
+ setTimeout(()=>{
+   const r=assistantReply(raw);
+   addChat('bot',r.text,r.page,r.page?(nezamLanguage==='ar'?'فتح الصفحة →':'Open page →'):null);
+   if(r.action==='location')openLocation();
+ },300);
+}
+function quickHelp(type){
+ const q={bus:'My bus is late',crowd:'The bus is crowded',ticket:'I have a ticket problem',safety:'I have a safety issue',route:'I need a route',lost:'I lost something'}[type]||type;
+ addChat('me',q);
+ const r=assistantReply(q);
+ setTimeout(()=>addChat('bot',r.text,r.page,r.page?(nezamLanguage==='ar'?'فتح الصفحة →':'Open page →'):null),200);
+}
+
+try{const saved=localStorage.getItem('nezamLocation');if(saved)userLocation=JSON.parse(saved)}catch(e){}
+applyLanguage();
+updateAuthUI();
+
+
+/* ===== Points & Coupons engine ===== */
+function getPoints(){return parseInt(localStorage.getItem('nezamPoints')||'0',10)}
+function setPoints(n){localStorage.setItem('nezamPoints',String(Math.max(0,n)));updateRewardsUI()}
+function addBookingPoints(bus){
+ const points=getPoints()+10;
+ setPoints(points);
+ const history=JSON.parse(localStorage.getItem('nezamRewardHistory')||'[]');
+ history.unshift({bus:String(bus),points:10,time:new Date().toLocaleString()});
+ localStorage.setItem('nezamRewardHistory',JSON.stringify(history.slice(0,20)));
+ updateRewardsUI();
+ showRewardToast(nezamLanguage==='ar'?'⭐ +10 نقاط!':'⭐ +10 points!');
+}
+function showRewardToast(msg){
+ const el=document.getElementById('rewardToast');
+ if(!el)return;
+ el.textContent=msg;el.style.display='block';
+ clearTimeout(window.rewardTimer);
+ window.rewardTimer=setTimeout(()=>el.style.display='none',2200);
+}
+function redeemCoupon(){
+ if(localStorage.getItem('nezamSignedIn')!=='1'){
+   openAuth('signin');return;
+ }
+ const points=getPoints();
+ if(points<100){
+   toast(nezamLanguage==='ar'?`تحتاج ${100-points} نقطة إضافية`:`You need ${100-points} more points`);
+   return;
+ }
+ setPoints(points-100);
+ const code='NZ10-'+Math.random().toString(36).substring(2,7).toUpperCase();
+ localStorage.setItem('nezamCoupon',code);
+ updateRewardsUI();
+ toast(nezamLanguage==='ar'?`🎉 تم استبدال 100 نقطة • الكوبون ${code}`:`🎉 100 points redeemed • Coupon ${code}`);
+}
+function updateRewardsUI(){
+ const points=getPoints();
+ const bal=document.getElementById('pointsBalance');
+ if(bal)bal.textContent=points;
+ const progress=document.getElementById('pointsProgress');
+ if(progress)progress.style.width=(points%100)+'%';
+ const next=document.getElementById('pointsNext');
+ if(next){
+   const remainder=points%100;
+   next.textContent=nezamLanguage==='ar'
+    ?`${remainder} / 100 نقطة للكوبون التالي`
+    :`${remainder} / 100 points to your next coupon`;
+ }
+ const code=localStorage.getItem('nezamCoupon');
+ const codeEl=document.getElementById('couponCode');
+ const btn=document.getElementById('redeemBtn');
+ if(codeEl)codeEl.textContent=code|| (points>=100?'READY':'LOCKED');
+ if(btn)btn.disabled=points<100;
+ const historyEl=document.getElementById('rewardsHistory');
+ if(historyEl){
+   const h=JSON.parse(localStorage.getItem('nezamRewardHistory')||'[]');
+   historyEl.innerHTML=h.length?h.map(x=>`<div class="alert"><span>🎟️</span><div><b>Bus ${x.bus} • +${x.points} points</b><p>${x.time}</p></div></div>`).join('')
+   :`<p class="muted">${nezamLanguage==='ar'?'لا توجد حجوزات بعد. احجز أول رحلة لتبدأ في جمع النقاط!':'No bookings yet. Book your first trip to start earning points!'}</p>`;
+ }
+}
+function applyRewardsLanguage(){
+ const ar=nezamLanguage==='ar';
+ const t=ar?{
+  title:'النقاط والكوبونات',subtitle:'اكسب نقاطاً مع كل حجز وحوّلها إلى كوبونات مفيدة.',
+  yourPoints:'نقاطك',pointsLabel:'نقطة متاحة',howTitle:'كيف تعمل؟',earn:'احجز رحلة',
+  earnText:'اكسب 10 نقاط مع كل حجز ناجح.',collect:'اجمع النقاط',
+  collectText:'يتم حفظ نقاطك تلقائياً في حسابك.',redeem:'احصل على كوبونات',
+  redeemText:'عند الوصول إلى 100 نقطة يمكنك فتح كوبون خصم 10%.',
+  coupons:'كوبوناتي',couponSub:'استبدل نقاطك للحصول على خصومات.',
+  coupon10Text:'100 نقطة • صالح لرحلة مؤهلة واحدة',coupon20Text:'200 نقطة • قريباً',
+  redeemBtn:'استبدال',soon:'قريباً',history:'سجل المكافآت',
+  noHistory:'لا توجد حجوزات بعد. احجز أول رحلة لتبدأ في جمع النقاط!'
+ }:{
+  title:'Points & Coupons',subtitle:'Earn points every time you book a trip and turn them into useful coupons.',
+  yourPoints:'YOUR POINTS',pointsLabel:'points available',howTitle:'How it works',earn:'Book a trip',
+  earnText:'Earn 10 points for every successful booking.',collect:'Collect points',
+  collectText:'Your points are saved automatically in your account.',redeem:'Get coupons',
+  redeemText:'Reach 100 points and unlock a 10% transport coupon.',
+  coupons:'My Coupons',couponSub:'Redeem your points for discounts.',
+  coupon10Text:'Costs 100 points • Valid for one eligible trip',coupon20Text:'Costs 200 points • Coming soon',
+  redeemBtn:'Redeem',soon:'Coming soon',history:'Rewards history',
+  noHistory:'No bookings yet. Book your first trip to start earning points!'
+ };
+ document.querySelectorAll('[data-reward]').forEach(el=>{
+  const k=el.getAttribute('data-reward');if(t[k])el.textContent=t[k];
+ });
+ document.querySelectorAll('[data-reward-nav]').forEach(el=>el.textContent=ar?'النقاط والكوبونات':'Points & Coupons');
+ updateRewardsUI();
+}
+const oldApplyLanguage=window.applyLanguage;
+window.applyLanguage=function(){
+ oldApplyLanguage();
+ applyRewardsLanguage();
+};
+updateRewardsUI();
+applyRewardsLanguage();
+
+</script>
+<div class="reward-toast" id="rewardToast"></div>
+</body>
+</html>
